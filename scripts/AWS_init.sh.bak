@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+terraform init
+
+terraform apply -auto-approve
+
+python create_bucket.py
+
+aws ec2 describe-network-interfaces --query NetworkInterfaces[*].[Attachment.[InstanceId],Association.[PublicDnsName]] --output=json
+
+

@@ -1,0 +1,28 @@
+aws ec2 describe-network-interfaces --query NetworkInterfaces[*].[Attachment.[InstanceId],Association.[PublicDnsName]] --output=json
+
+aws ec2 describe-network-interfaces --query NetworkInterfaces[*].[Attachment.[InstanceId],Association.[PublicIp]] --output=json
+
+read -p "Instance public DNS :" dns
+
+echo $dns
+
+read -p "Instance public ip :" ip
+
+echo $ip
+
+#Download data from hdfs
+#hadoop fs -get /tmp/data/data.csv data.csv
+
+#Encrypt file using a password
+#./encrypt.sh -e -i data.csv -o data.enc -p toto
+
+#Upload to ec2 instance via SSH
+scp -i bigdata.pem xdata.csv ec2-user@${dns}:/home/ec2-user
+scp -i bigdata.pem prediction.py ec2-user@${dns}:/home/ec2-user
+scp -i bigdata.pem scaler.modele ec2-user@${dns}:/home/ec2-user
+scp -i bigdata.pem modeleLineaire.modele ec2-user@${dns}:/home/ec2-user
+scp -i bigdata.pem upload_file.py ec2-user@${dns}:/home/ec2-user
+ssh -i bigdata.pem ec2-user@${ip} 'aws configure'
+scp -i bigdata.pem credentials ec2-user@${dns}:/home/ec2-user/.aws
+
+ssh -i bigdata.pem ec2-user@${ip} 'pip3 install boto3;pip3 install sklearn;pip3 install joblib;pip3 install pandas;python3 prediction.py;python3 upload_file.py'

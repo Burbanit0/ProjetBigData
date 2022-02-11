@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+terraform init
+
+terraform apply -auto-approve
+
+python create_bucket.py
+
+aws ec2 describe-network-interfaces --query NetworkInterfaces[*].[Attachment.[InstanceId],Association.[PublicDnsName]] --output=json
+
+read -p "Instance public ip :" ip
+
+echo $ip
+
+#Download data from hdfs
+#hadoop fs -get /tmp/data/data.csv data.csv
+
+#Encrypt file using a password
+#./encrypt.sh -e -i data.csv -o data.enc -p toto
+
+#Upload to ec2 instance via SSH
+scp -i bigdata.pem data.csv ec2-user@${ip}:/home/ec2-user
